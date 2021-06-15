@@ -100,13 +100,14 @@ def api_strategy_execute() -> dict:
     tickers_data = get_ticker_data(dca_config.keys())
     result = {}
     for pair in dca_config.keys():
+        result[pair] = {}
         buying_power = dca_config[pair]['amount']
         if pair not in tickers_data:
-            print(f'{pair}: not found in ticker data')
+            result[pair]['meta'] = f'{pair}: not found in ticker data'
             continue
         price = float(tickers_data[pair]['a'][0])
         volume = float(buying_power / price)
-        result[pair] = {}
+
         result[pair]['task'] = f'invest EUR {buying_power}: place order {volume} @ {price}'
         result[pair]['reply'] = add_order(pair, price, volume)
     return result
@@ -116,4 +117,3 @@ def api_strategy_execute() -> dict:
 def api_strategy() -> dict:
     eur = get_balance()
     return {'balance': eur, 'dca': dca_config}
-
