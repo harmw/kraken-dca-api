@@ -70,13 +70,13 @@ def get_ticker_data(pairs: list) -> list:
         return kraken['result']
 
 
-def add_order(pair: str, price: float, volume: float) -> bool:
+def add_order(pair: str, price: float, volume: float, i_am_just_testing: bool) -> bool:
     endpoint = '/0/private/AddOrder'
     payload = {
         'ordertype': 'limit',
         'type': 'buy',
         'pair': pair,
-        'validate': 'true',
+        'validate': str(i_am_just_testing),
         'price': str(price),
         'volume': volume
     }
@@ -93,12 +93,12 @@ def add_order(pair: str, price: float, volume: float) -> bool:
 
 
 @app.get("/")
-def read_root() -> str:
-    return "<h3>Hello Crypto</h3>"
+def read_root() -> dict:
+    return {"message": "Hello Crypto"}
 
 
 @app.get("/api/strategy/execute")
-def api_strategy_execute() -> dict:
+def api_strategy_execute(i_am_just_testing: bool = True) -> dict:
     tickers_data = get_ticker_data(dca_config.keys())
     result = {}
     for pair in dca_config.keys():
@@ -109,9 +109,10 @@ def api_strategy_execute() -> dict:
             continue
         price = float(tickers_data[pair]['a'][0])
         volume = float(buying_power / price)
+        suffix = " (test)" if i_am_just_testing else None
 
-        result[pair]['task'] = f'invest EUR {buying_power}: place order {volume} @ {price}'
-        result[pair]['reply'] = add_order(pair, price, volume)
+        result[pair]['task'] = f'invest EUR {buying_power}: place order {volume} @ {price}{suffix}'
+        result[pair]['reply'] = add_order(pair, price, volume, i_am_just_testing)
     return result
 
 
