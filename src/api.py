@@ -47,7 +47,9 @@ def get_balance():
     kraken = _call_kraken(endpoint, payload)
     if 'error' in kraken and len(kraken['error']) > 0:
         return kraken['error']
-    return [kraken['result']['ZEUR']]
+    for p in ['EOS', 'DASH', 'XXRP']:
+        del kraken['result'][p]
+    return kraken['result']
 
 
 def get_ticker_data(pairs: list) -> list:
