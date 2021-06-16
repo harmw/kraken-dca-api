@@ -12,6 +12,9 @@ from fastapi import FastAPI
 api_key = os.getenv('API_KEY')
 api_private_key = os.getenv('PRIVATE_KEY')
 
+# This integer is used to label all orders coming from us
+USERREF = 1337
+
 app = FastAPI()
 
 dca_config = {
@@ -76,13 +79,17 @@ def get_ticker_data(pairs: list) -> list:
 def add_order(pair: str, price: float, volume: float, i_am_just_testing: bool) -> bool:
     endpoint = '/0/private/AddOrder'
     payload = {
+        'userref': USERREF,
         'ordertype': 'limit',
         'type': 'buy',
         'pair': pair,
-        'validate': str(i_am_just_testing),
         'price': str(price),
         'volume': volume
     }
+
+    if i_am_just_testing:
+        payload['validate'] = 'true'
+
     kraken = _call_kraken(endpoint, payload)
     if 'error' in kraken and len(kraken['error']) > 0:
         return kraken['error']
@@ -113,7 +120,7 @@ def api_strategy_execute(i_am_just_testing: bool = True) -> dict:
             continue
         price = float(tickers_data[pair]['a'][0])
         volume = float(buying_power / price)
-        suffix = " (test)" if i_am_just_testing else None
+        suffix = " (test)" if i_am_just_testing else ""
 
         result[pair]['task'] = f'invest EUR {buying_power}: place order {volume} @ {price}{suffix}'
         result[pair]['reply'] = add_order(pair, price, volume, i_am_just_testing)
