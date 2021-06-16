@@ -15,10 +15,13 @@ api_private_key = os.getenv('PRIVATE_KEY')
 app = FastAPI()
 
 dca_config = {
-    'XXBTZEUR': {'amount': 12},
-    'XETHZEUR': {'amount': 16},
-    'XXMRZEUR': {'amount': 12},
-    'ADAEUR': {'amount': 10}
+    'interval': 'weekly',
+    'trades': {
+        'XXBTZEUR': {'amount': 12},
+        'XETHZEUR': {'amount': 16},
+        'XXMRZEUR': {'amount': 12},
+        'ADAEUR': {'amount': 10}
+    }
 }
 
 
@@ -99,11 +102,12 @@ def read_root() -> dict:
 
 @app.get("/api/strategy/execute")
 def api_strategy_execute(i_am_just_testing: bool = True) -> dict:
-    tickers_data = get_ticker_data(dca_config.keys())
+    trades = dca_config['trades']
+    tickers_data = get_ticker_data(trades.keys())
     result = {}
-    for pair in dca_config.keys():
+    for pair in trades.keys():
         result[pair] = {}
-        buying_power = dca_config[pair]['amount']
+        buying_power = trades[pair]['amount']
         if pair not in tickers_data:
             result[pair]['meta'] = f'{pair}: not found in ticker data'
             continue
