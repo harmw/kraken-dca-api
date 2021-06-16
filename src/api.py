@@ -117,5 +117,9 @@ def api_strategy_execute() -> dict:
 
 @app.get("/api/strategy/info")
 def api_strategy() -> dict:
-    eur = get_balance()
-    return {'balance': eur, 'dca': dca_config}
+    return {'dca': dca_config}
+
+
+@app.get("/api/balance")
+def api_strategy() -> dict:
+    return {'balance': get_balance()}
