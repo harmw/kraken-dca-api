@@ -60,7 +60,7 @@ def get_ticker_data(pairs: list) -> list:
     }
     kraken = _call_kraken(endpoint, payload)
     if 'error' in kraken and len(kraken['error']) > 0:
-        logging.warning(kraken['error'])
+        print(kraken['error'])
         return []
     else:
         return kraken['result']
@@ -110,9 +110,9 @@ def api_strategy_execute(i_am_just_testing: bool = True) -> dict:
             continue
         price = float(tickers_data[pair]['a'][0])
         volume = float(buying_power / price)
-        suffix = " (test)" if i_am_just_testing else ""
 
-        result[pair]['task'] = f'invest EUR {buying_power}: place order {volume} @ {price}{suffix}'
+        result[pair]['task'] = f'invest EUR {buying_power}: place order {volume} @ {price}'
+        result[pair]['meta'] = {'test': True if i_am_just_testing else False}
         result[pair]['reply'] = add_order(pair, price, volume, i_am_just_testing)
     return result
 
