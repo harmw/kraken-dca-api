@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import hmac
+import json
 import os
 import requests
 import time
@@ -12,10 +13,12 @@ from . import config
 
 api_key = os.getenv('API_KEY')
 api_private_key = os.getenv('PRIVATE_KEY')
-USERREF = config.Settings().userref
 dca_config = config.Settings().dca_config
+orderbook_path = './orderbook'
 
 app = FastAPI()
+
+USERREF = config.Settings().userref
 
 
 def _call_kraken(endpoint, payload):
@@ -102,6 +105,7 @@ def api_strategy_execute(i_am_just_testing: bool = True) -> dict:
     trades = dca_config['trades']
     tickers_data = get_ticker_data(trades.keys())
     result = {}
+    timestamp = str(int(time.time()))
     for pair in trades.keys():
         result[pair] = {}
         buying_power = trades[pair]['amount']
@@ -111,9 +115,16 @@ def api_strategy_execute(i_am_just_testing: bool = True) -> dict:
         price = float(tickers_data[pair]['a'][0])
         volume = float(buying_power / price)
 
-        result[pair]['task'] = f'invest EUR {buying_power}: place order {volume} @ {price}'
+        result[pair]['task'] = f'invest {buying_power}: place order {volume} @ {price}'
         result[pair]['meta'] = {'test': True if i_am_just_testing else False}
         result[pair]['reply'] = add_order(pair, price, volume, i_am_just_testing)
+
+        # To keep this lean, write a file reflecting order details instead of depending on something more mature like a
+        # database.
+        data = {}
+        file_name = f'{orderbook_path}/{timestamp}-{pair}.json'
+        with open(file_name, 'w+') as f:
+            f.write(json.dumps(result))
     return result
 
 
