@@ -7,25 +7,15 @@ import time
 import urllib
 
 from fastapi import FastAPI
+from . import config
 
 
 api_key = os.getenv('API_KEY')
 api_private_key = os.getenv('PRIVATE_KEY')
-
-# This integer is used to label all orders coming from us
-USERREF = 1337
+USERREF = config.Settings().userref
+dca_config = config.Settings().dca_config
 
 app = FastAPI()
-
-dca_config = {
-    'interval': 'weekly',
-    'trades': {
-        'XXBTZEUR': {'amount': 12},
-        'XETHZEUR': {'amount': 16},
-        'XXMRZEUR': {'amount': 12},
-        'ADAEUR': {'amount': 10}
-    }
-}
 
 
 def _call_kraken(endpoint, payload):

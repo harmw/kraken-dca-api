@@ -6,5 +6,5 @@ A _quick&dirty_ way to dollar-cost-average your way into cryptos.
 This requires `python 3.6.1`.
 
 ```bash
-uvicorn api:app
+uvicorn src.api:app
 ```
