@@ -125,6 +125,22 @@ def api_strategy_execute(i_am_just_testing: bool = True) -> dict:
         file_name = f'{orderbook_path}/{timestamp}-{pair}.json'
         with open(file_name, 'w+') as f:
             f.write(json.dumps(result))
+
+        # Post something small to a private Slack channel
+        pretty_volume = float(round(volume * 10000) / 10000)
+        slack_data = {
+            'blocks': [{
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f">:ledger: order placed for *{pair}*\n>:chart_with_upwards_trend: buy {pretty_volume} @ {price}"
+                }
+            }]
+        }
+        slack_url = config.Settings().slack_hook_dev if i_am_just_testing else config.Settings().slack_hook_main
+        slack = requests.post(slack_url, json=slack_data)
+        if not slack.ok:
+            print(slack.text)
     return result
 
 
