@@ -150,5 +150,35 @@ def api_strategy() -> dict:
 
 
 @app.get("/api/balance")
-def api_strategy() -> dict:
-    return {'balance': get_balance()}
+def api_balance(slack: bool = False) -> dict:
+    balance: dict = get_balance()
+    trades = dca_config['trades']
+    tickers_data = get_ticker_data(trades.keys())
+
+    for pair in trades.keys():
+        name = trades[pair]['name']
+        amount = float(balance[name])
+        value = float(tickers_data[pair]['a'][0]) * amount
+        balance[name] = {'value': value, 'amount': amount}
+
+    if slack:
+        text = "*Balance*\n"
+        del balance['ZEUR']
+        for asset in balance.keys():
+            amount = round(balance[asset]['amount'], 4)
+            value = round(balance[asset]['value'], 2)
+            text+= f":moneybag: {amount} *{asset}*: EUR {value}\n"
+        slack_data = {
+            'blocks': [{
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": text
+                }
+            }]
+        }
+        slack_url = config.Settings().slack_hook_main
+        slack = requests.post(slack_url, json=slack_data)
+        if not slack.ok:
+            print(slack.text)
+    return {'balance': balance}
