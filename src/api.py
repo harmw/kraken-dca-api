@@ -133,7 +133,7 @@ def api_strategy_execute(i_am_just_testing: bool = True) -> dict:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f">:ledger: order placed for *{pair}*\n>:chart_with_upwards_trend: buy {pretty_volume} @ {price}"
+                    "text": f">:ledger: invest EUR {buying_power} in *{pair}*\n>:chart_with_upwards_trend: buy {pretty_volume} @ {price}"
                 }
             }]
         }
