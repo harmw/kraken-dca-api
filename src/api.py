@@ -151,19 +151,21 @@ def api_strategy() -> dict:
 
 @app.get("/api/balance")
 def api_balance(slack: bool = False) -> dict:
-    balance: dict = get_balance()
+    kraken_balance: dict = get_balance()
     trades = dca_config['trades']
     tickers_data = get_ticker_data(trades.keys())
+    balance = {}
 
     for pair in trades.keys():
         name = trades[pair]['name']
-        amount = float(balance[name])
+        amount = float(kraken_balance[name])
+        if 'stake_name' in trades[pair]:
+            amount += float(kraken_balance[trades[pair]['stake_name']])
         value = float(tickers_data[pair]['a'][0]) * amount
         balance[name] = {'value': value, 'amount': amount}
 
     if slack:
         text = "*Balance*\n"
-        del balance['ZEUR']
         for asset in balance.keys():
             amount = round(balance[asset]['amount'], 4)
             value = round(balance[asset]['value'], 2)
