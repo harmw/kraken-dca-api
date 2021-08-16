@@ -1,4 +1,5 @@
 import base64
+import datetime
 import hashlib
 import hmac
 import json
@@ -184,3 +185,31 @@ def api_balance(slack: bool = False) -> dict:
         if not slack.ok:
             print(slack.text)
     return {'balance': balance}
+
+
+@app.get("/api/fng")
+def api_fng() -> dict:
+    r = requests.get('https://api.alternative.me/fng/?limit=2').json()
+    fng_current = r['data'][0]['value_classification']
+    fng_current_n = int(r['data'][0]['value'])
+    fng_last = r['data'][1]['value_classification']
+    fng_last_n = int(r['data'][1]['value'])
+    fng_update = int(r['data'][0]['time_until_update'])
+
+    update = str(datetime.timedelta(seconds=fng_update))
+
+    icon = ':chart_with_upwards_trend:' if fng_current_n > 55 else ':chart_with_downwards_trend:'
+    slack_data = {
+        'blocks': [{
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f">{icon} The _Bitcoin Fear and Greed Index_ is *{fng_current_n}/{fng_current}* (was: _{fng_last_n}/{fng_last}_)"
+            }
+        }]
+    }
+    slack_url = config.Settings().slack_hook_main
+    slack = requests.post(slack_url, json=slack_data)
+    if not slack.ok:
+        print(slack.text)
+    return r
