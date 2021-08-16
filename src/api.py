@@ -166,11 +166,15 @@ def api_balance(slack: bool = False) -> dict:
         balance[name] = {'value': value, 'amount': amount}
 
     if slack:
+        total_value = 0
+        total_assets = len(balance.keys())
         text = "*Balance*\n"
         for asset in balance.keys():
             amount = round(balance[asset]['amount'], 4)
             value = round(balance[asset]['value'], 2)
+            total_value += round(value)
             text+= f":moneybag: {amount} *{asset}*: EUR {value}\n"
+        text+= f":memo: Total {total_assets} assets @ EUR {total_value}"
         slack_data = {
             'blocks': [{
                 "type": "section",
