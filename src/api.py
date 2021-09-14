@@ -114,7 +114,7 @@ def api_strategy_execute(i_am_just_testing: bool = True) -> dict:
             result[pair]['meta'] = f'{pair}: not found in ticker data'
             continue
         price = float(tickers_data[pair]['a'][0])
-        volume = float(buying_power / price)
+        volume = float(round(float(buying_power / price) * 10000) / 10000)
 
         result[pair]['task'] = f'invest {buying_power}: place order {volume} @ {price}'
         result[pair]['meta'] = {'test': True if i_am_just_testing else False}
@@ -128,13 +128,12 @@ def api_strategy_execute(i_am_just_testing: bool = True) -> dict:
             f.write(json.dumps(result[pair]))
 
         # Post something small to a private Slack channel
-        pretty_volume = float(round(volume * 10000) / 10000)
         slack_data = {
             'blocks': [{
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f">:ledger: invest EUR {buying_power} in *{pair}*\n>:chart_with_upwards_trend: buy {pretty_volume} @ {price}"
+                    "text": f">:ledger: invest EUR {buying_power} in *{pair}*\n>:chart_with_upwards_trend: buy {volume} @ {price}"
                 }
             }]
         }
