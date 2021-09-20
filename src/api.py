@@ -190,6 +190,30 @@ def api_balance(slack: bool = False) -> dict:
     return {'balance': balance}
 
 
+@app.get("/api/stake")
+def api_stake():
+    result = {}
+    endpoint = '/0/private/Stake'
+    kraken_balance: dict = get_balance()
+    trades = list(filter(lambda l: 'stake_method' in dca_config['trades'][l], dca_config['trades']))
+
+    for t in trades:
+        method = dca_config['trades'][t]['stake_method']
+        asset = dca_config['trades'][t]['name']
+        amount = float(kraken_balance[asset])
+        payload = {
+            'asset': asset,
+            'amount': amount,
+            'method': method
+        }
+        kraken = _call_kraken(endpoint, payload)
+        if 'error' in kraken and len(kraken['error']) > 0:
+            result[asset] = kraken['error']
+        else:
+            result[asset] = kraken['result']
+    return result
+
+
 @app.get("/api/fng")
 def api_fng() -> dict:
     r = requests.get('https://api.alternative.me/fng/?limit=2').json()
